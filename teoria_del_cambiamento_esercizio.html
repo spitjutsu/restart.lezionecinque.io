@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teoria del Cambiamento — Esercizio interattivo</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f5f4f0;
+    --color-background-tertiary: #eeecea;
+    --color-text-primary: #1a1a18;
+    --color-text-secondary: #5f5e5a;
+    --color-text-tertiary: #888780;
+    --color-border-tertiary: rgba(0,0,0,0.12);
+    --color-border-secondary: rgba(0,0,0,0.22);
+    --color-border-primary: rgba(0,0,0,0.35);
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --font-sans: system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-background-primary: #1e1e1c;
+      --color-background-secondary: #272724;
+      --color-background-tertiary: #2e2e2b;
+      --color-text-primary: #f0ede8;
+      --color-text-secondary: #a8a69f;
+      --color-text-tertiary: #6e6d69;
+      --color-border-tertiary: rgba(255,255,255,0.10);
+      --color-border-secondary: rgba(255,255,255,0.18);
+      --color-border-primary: rgba(255,255,255,0.28);
+    }
+  }
+  body {
+    font-family: var(--font-sans);
+    background: var(--color-background-tertiary);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .wrapper {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .header { padding-bottom: 1rem; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1.5rem; }
+  .header h1 { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+  .subtitle { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+  .case-box {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    border: 0.5px solid var(--color-border-tertiary);
+  }
+  .case-title { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 6px; font-weight: 500; }
+  .case-desc { font-size: 14px; color: var(--color-text-primary); line-height: 1.6; }
+  .phase-nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .phase-btn {
+    font-size: 12px; font-weight: 500; padding: 6px 12px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-secondary);
+    background: var(--color-background-primary);
+    color: var(--color-text-secondary);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .phase-btn.done { border-color: #5DCAA5; background: #E1F5EE; color: #0F6E56; }
+  .exercise-area {
+    background: var(--color-background-primary);
+    border-radius: var(--border-radius-lg);
+    border: 0.5px solid var(--color-border-tertiary);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .phase-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 1rem; }
+  .phase-badge {
+    font-size: 11px; font-weight: 500; padding: 4px 10px;
+    border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+  }
+  .phase-label { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+  .phase-definition { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; line-height: 1.5; }
+  .question { font-size: 14px; color: var(--color-text-primary); margin-bottom: 0.75rem; line-height: 1.6; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option-btn {
+    text-align: left; padding: 10px 14px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-secondary);
+    background: var(--color-background-primary);
+    font-size: 14px; color: var(--color-text-primary);
+    cursor: pointer; line-height: 1.5; transition: all 0.15s;
+    font-family: var(--font-sans);
+  }
+  .option-btn:hover:not(:disabled) { background: var(--color-background-secondary); border-color: var(--color-border-primary); }
+  .option-btn.correct { background: #E1F5EE; border-color: #1D9E75; color: #0F6E56; }
+  .option-btn.wrong { background: #FCEBEB; border-color: #E24B4A; color: #A32D2D; }
+  .option-btn:disabled { cursor: default; }
+  .feedback {
+    margin-top: 1rem; padding: 12px 14px;
+    border-radius: var(--border-radius-md);
+    font-size: 13px; line-height: 1.6; display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { background: #E1F5EE; color: #085041; border: 0.5px solid #5DCAA5; }
+  .feedback.wrong { background: #FAECE7; color: #712B13; border: 0.5px solid #F0997B; }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+  .nav-btn {
+    font-size: 13px; font-weight: 500; padding: 8px 16px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-secondary);
+    background: var(--color-background-primary);
+    color: var(--color-text-primary); cursor: pointer;
+    font-family: var(--font-sans);
+  }
+  .nav-btn:hover:not(:disabled) { background: var(--color-background-secondary); }
+  .nav-btn:disabled { opacity: 0.35; cursor: default; }
+  .progress-text { font-size: 12px; color: var(--color-text-secondary); }
+  .summary {
+    background: var(--color-background-primary);
+    border-radius: var(--border-radius-lg);
+    border: 0.5px solid var(--color-border-tertiary);
+    padding: 1.5rem; text-align: center;
+  }
+  .score-big { font-size: 40px; font-weight: 500; color: var(--color-text-primary); }
+  .score-label { font-size: 14px; color: var(--color-text-secondary); margin-top: 4px; margin-bottom: 1.5rem; }
+  .chain-preview { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; margin: 1rem 0; }
+  .chain-node { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 20px; }
+  .chain-arrow { font-size: 14px; color: var(--color-text-tertiary); }
+  .restart-btn {
+    font-size: 13px; font-weight: 500; padding: 8px 20px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-secondary);
+    background: var(--color-background-secondary);
+    color: var(--color-text-primary); cursor: pointer;
+    margin-top: 0.5rem; font-family: var(--font-sans);
+  }
+  .restart-btn:hover { background: var(--color-background-tertiary); }
+  .brand {
+    text-align: center; margin-top: 2rem;
+    font-size: 12px; color: var(--color-text-tertiary);
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <h1>Teoria del cambiamento — esercizio</h1>
+    <div class="subtitle">Caso reale: "Abiti &amp; Rinascita" — impresa sociale, settore abiti da sposa</div>
+  </div>
+
+  <div class="case-box">
+    <div class="case-title">Il caso studio</div>
+    <div class="case-desc"><strong>Abiti &amp; Rinascita</strong> è una cooperativa sociale che raccoglie abiti da sposa usati o invenduti da atelier, li restaura insieme a donne in percorsi di reinserimento lavorativo, e li rivende o noleggia a prezzi accessibili. L'obiettivo è duplice: offrire occupazione dignitosa a donne in difficoltà e rendere l'abito da sposa accessibile a chi non può permettersi il mercato tradizionale.</div>
+  </div>
+
+  <div class="phase-nav" id="phaseNav"></div>
+  <div id="exerciseArea"></div>
+
+  <div class="brand">Re-Start Generation 2 · Lezione 5 · Comunicazione sociale</div>
+</div>
+
+<script>
+const phases = [
+  {
+    key: 'design', label: 'Design',
+    badgeColor: '#AFA9EC', badgeBg: '#EEEDFE', badgeText: '#3C3489',
+    definition: 'Definizione degli obiettivi in termini di impatto sociale atteso.',
+    question: 'Qual è l\'obiettivo principale di "Abiti & Rinascita" in termini di impatto sociale?',
+    options: [
+      'Diventare il più grande rivenditore di abiti da sposa in Italia',
+      'Creare occupazione dignitosa per donne fragili e rendere l\'abito da sposa accessibile a chi ne ha bisogno',
+      'Ridurre i costi di produzione degli atelier attraverso l\'outsourcing',
+      'Aumentare il fatturato degli atelier partner con campagne marketing'
+    ],
+    correct: 1,
+    feedback: {
+      right: 'Esatto! Il "design" fissa gli obiettivi in termini di cambiamento sociale: qui sono due, intrecciati — inclusione lavorativa e accessibilità. Tutto il resto (attività, risorse, output) deve servire questi obiettivi.',
+      wrong: 'Non proprio. Nella fase di design si definiscono gli obiettivi in termini di impatto sociale — non commerciali. Per "Abiti & Rinascita" il cuore è doppio: occupazione per donne in difficoltà e accessibilità dell\'abito da sposa.'
+    }
+  },
+  {
+    key: 'input', label: 'Input',
+    badgeColor: '#85B7EB', badgeBg: '#E6F1FB', badgeText: '#0C447C',
+    definition: 'Risorse necessarie per svolgere le attività: umane, economiche, materiali.',
+    question: 'Quali sono gli input principali di "Abiti & Rinascita"?',
+    options: [
+      'Campagne sui social media e influencer del settore wedding',
+      'Abiti donati o ceduti dagli atelier, fondi da bandi pubblici, lavoratrici in reinserimento e sarte esperte come tutor',
+      'Negozi in affitto nelle principali città e personale di vendita specializzato',
+      'Software gestionali per e-commerce e magazzino automatizzato'
+    ],
+    correct: 1,
+    feedback: {
+      right: 'Perfetto! Gli input sono le risorse in entrata: materiali (gli abiti), economiche (i fondi), e umane (le lavoratrici e i tutor). Senza questi "ingredienti" non si può avviare nessuna attività.',
+      wrong: 'Non proprio. Gli input sono le risorse concrete necessarie per partire: qui abbiamo abiti ceduti dagli atelier, finanziamenti pubblici o privati, e le persone — sia le beneficiarie sia chi le forma.'
+    }
+  },
+  {
+    key: 'attivita', label: 'Attività',
+    badgeColor: '#F0997B', badgeBg: '#FAECE7', badgeText: '#712B13',
+    definition: 'Le azioni concrete che l\'organizzazione svolge con le risorse disponibili.',
+    question: 'Cosa fa concretamente "Abiti & Rinascita" con i propri input?',
+    options: [
+      'Pubblica cataloghi online e gestisce un sito di e-commerce per abiti nuovi',
+      'Organizza sfilate di moda per raccogliere fondi a favore di enti caritativi',
+      'Forma le donne al restauro e alla sartoria, restaura gli abiti, gestisce il punto vendita/noleggio e accompagna le beneficiarie in un percorso lavorativo',
+      'Collabora con stilisti di fama per creare collezioni capsule a edizione limitata'
+    ],
+    correct: 2,
+    feedback: {
+      right: 'Esatto! Le attività sono le azioni che trasformano gli input in qualcosa di utile. Qui la cooperativa fa formazione, restauro, vendita — e tutto questo contemporaneamente genera valore economico e sociale.',
+      wrong: 'Non è questa. Le attività sono le azioni concrete che la cooperativa svolge ogni giorno: formare le lavoratrici, restaurare gli abiti ricevuti, venderli o noleggiarli, accompagnare le beneficiarie nel percorso.'
+    }
+  },
+  {
+    key: 'output', label: 'Output',
+    badgeColor: '#97C459', badgeBg: '#EAF3DE', badgeText: '#27500A',
+    definition: 'I risultati diretti e misurabili delle attività, nel breve periodo.',
+    question: 'Quali sono gli output (risultati diretti misurabili) di "Abiti & Rinascita"?',
+    options: [
+      'Un cambiamento nella percezione culturale del mercato secondario del lusso in Italia',
+      'Numero di abiti restaurati, ore di formazione erogate, numero di donne formate, numero di abiti venduti o noleggiati',
+      'La riduzione dello spreco tessile globale a livello europeo',
+      'L\'aumento dell\'autostima delle clienti nei loro matrimoni'
+    ],
+    correct: 1,
+    feedback: {
+      right: 'Perfetto! Gli output sono i "numeri" a breve termine — quelli che si contano facilmente: abiti restaurati, ore di formazione, pezzi venduti. Sono i risultati diretti delle attività, non ancora il cambiamento profondo.',
+      wrong: 'Non esattamente. Gli output sono risultati diretti e quantificabili nel breve periodo. Non ancora il cambiamento profondo (quello è l\'outcome o l\'impatto), ma nemmeno intangibili — sono cose che si contano: abiti, ore, persone formate.'
+    }
+  },
+  {
+    key: 'outcome', label: 'Outcome',
+    badgeColor: '#EF9F27', badgeBg: '#FAEEDA', badgeText: '#633806',
+    definition: 'Risultati positivi (o negativi) di medio-lungo periodo per i beneficiari.',
+    question: 'Quale tra questi è un outcome di "Abiti & Rinascita" per le lavoratrici?',
+    options: [
+      '15 abiti restaurati nel primo trimestre dell\'anno',
+      'Le donne in reinserimento acquisiscono competenze sartoriali spendibili nel mercato del lavoro e recuperano fiducia professionale',
+      'Il fatturato della cooperativa supera il break-even nel secondo anno',
+      'Il sito web registra 10.000 visitatori unici al mese'
+    ],
+    correct: 1,
+    feedback: {
+      right: 'Esatto! L\'outcome è il cambiamento reale nella vita delle persone: nuove competenze, autonomia, fiducia. Non si conta facilmente come un output, ma si racconta — ed è il cuore di perché l\'impresa esiste.',
+      wrong: 'Non questa. Gli outcome sono i cambiamenti di medio-lungo periodo nella vita dei beneficiari — non numeri di produzione (quelli sono output) né dati finanziari. Per le lavoratrici: nuove competenze, ritrovata fiducia, autonomia.'
+    }
+  },
+  {
+    key: 'impatto', label: 'Impatto',
+    badgeColor: '#5DCAA5', badgeBg: '#E1F5EE', badgeText: '#085041',
+    definition: 'Gli effetti più ampi e duraturi sul contesto sociale, economico o ambientale.',
+    question: 'Qual è l\'impatto sistemico di lungo periodo di "Abiti & Rinascita"?',
+    options: [
+      'Il numero di matrimoni organizzati grazie alla cooperativa ogni anno',
+      'La cooperativa vince un premio nazionale per l\'innovazione sociale',
+      'Contribuire alla riduzione della povertà femminile, normalizzare il mercato dell\'usato nel settore luxury e ridurre lo spreco tessile nel settore moda cerimonia',
+      'Aprire 5 nuovi punti vendita entro tre anni dalla fondazione'
+    ],
+    correct: 2,
+    feedback: {
+      right: 'Perfetto! L\'impatto è il cambiamento più ampio che l\'impresa contribuisce a produrre nel sistema — non solo sulle singole beneficiarie, ma sulla società: riduzione della povertà, cambiamento culturale, sostenibilità. È la risposta alla domanda "cosa è cambiato davvero?"',
+      wrong: 'Non è questa. L\'impatto è il cambiamento sistemico e di lungo periodo — quello che va oltre le singole persone e tocca la comunità e il sistema: riduzione dello spreco, contrasto alla povertà, cambio culturale sul riuso nel lusso.'
+    }
+  }
+];
+
+let current = 0;
+let answered = Array(phases.length).fill(null);
+let selected = Array(phases.length).fill(null);
+
+function renderNav() {
+  const nav = document.getElementById('phaseNav');
+  nav.innerHTML = phases.map((p, i) => {
+    let cls = 'phase-btn';
+    if (answered[i] !== null) cls += ' done';
+    const isActive = i === current;
+    const style = isActive
+      ? `background:${p.badgeBg};color:${p.badgeText};border-color:${p.badgeColor}`
+      : '';
+    return `<button class="${cls}" onclick="goTo(${i})" style="${style}">${p.label}</button>`;
+  }).join('');
+}
+
+function renderExercise() {
+  const area = document.getElementById('exerciseArea');
+  if (current === phases.length) {
+    const score = answered.filter(a => a === true).length;
+    area.innerHTML = `
+      <div class="summary">
+        <div class="score-big">${score}/${phases.length}</div>
+        <div class="score-label">risposte corrette — ${score === phases.length ? 'catena completa!' : 'riprova le fasi sbagliate'}</div>
+        <div class="chain-preview">
+          ${phases.map((p,i) => `
+            <span class="chain-node" style="background:${p.badgeBg};color:${p.badgeText}">${p.label}</span>
+            ${i < phases.length-1 ? '<span class="chain-arrow">→</span>' : ''}
+          `).join('')}
+        </div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin:0.5rem 0 1.5rem;line-height:1.6;">
+          Hai mappato tutta la catena del cambiamento di "Abiti &amp; Rinascita".<br>
+          Ora puoi applicare lo stesso schema alla tua impresa simulata!
+        </div>
+        <button class="restart-btn" onclick="restart()">Ricomincia dall'inizio</button>
+      </div>`;
+    return;
+  }
+
+  const p = phases[current];
+  const ans = answered[current];
+  const sel = selected[current];
+  const done = ans !== null;
+
+  area.innerHTML = `
+    <div class="exercise-area">
+      <div class="phase-header">
+        <span class="phase-badge" style="background:${p.badgeBg};color:${p.badgeText};border:0.5px solid ${p.badgeColor}">${p.label}</span>
+        <div>
+          <div class="phase-label">${p.label}</div>
+          <div class="phase-definition">${p.definition}</div>
+        </div>
+      </div>
+      <div class="question">${p.question}</div>
+      <div class="options">
+        ${p.options.map((opt, i) => {
+          let cls = 'option-btn';
+          if (done) {
+            if (i === p.correct) cls += ' correct';
+            else if (i === sel && sel !== p.correct) cls += ' wrong';
+          }
+          return `<button class="${cls}" ${done ? 'disabled' : ''} onclick="answer(${i})">${opt}</button>`;
+        }).join('')}
+      </div>
+      <div class="feedback ${done ? 'show ' + (ans ? 'correct' : 'wrong') : ''}">
+        ${done ? (ans ? '✓ ' + p.feedback.right : '✗ ' + p.feedback.wrong) : ''}
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" onclick="goTo(${current-1})" ${current === 0 ? 'disabled' : ''}>← Precedente</button>
+      <span class="progress-text">${current+1} di ${phases.length}</span>
+      <button class="nav-btn" onclick="goTo(${current+1})" ${!done ? 'disabled' : ''}>
+        ${current === phases.length-1 ? 'Risultati →' : 'Prossima →'}
+      </button>
+    </div>`;
+}
+
+function answer(idx) {
+  if (answered[current] !== null) return;
+  selected[current] = idx;
+  answered[current] = idx === phases[current].correct;
+  renderNav();
+  renderExercise();
+}
+
+function goTo(i) {
+  if (i < 0 || i > phases.length) return;
+  if (i > current && i < phases.length && answered[current] === null) return;
+  current = i;
+  renderNav();
+  renderExercise();
+}
+
+function restart() {
+  current = 0;
+  answered = Array(phases.length).fill(null);
+  selected = Array(phases.length).fill(null);
+  renderNav();
+  renderExercise();
+}
+
+renderNav();
+renderExercise();
+</script>
+</body>
+</html>
